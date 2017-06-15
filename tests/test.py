@@ -1,9 +1,11 @@
 import os
 import shutil
 
-import pyfakefs.fake_filesystem as fake_fs
-import duplicate_finder
 import mongomock
+import pyfakefs.fake_filesystem as fake_fs
+import pytest
+
+import duplicate_finder
 
 
 def test_get_image_files(fs):
@@ -155,6 +157,11 @@ def test_dedup():
         # It is still in its original place
         assert os.path.exists(item['file_name'])
 
+    with pytest.raises(Exception):
+        # Trash folder is not there
+        duplicate_finder.dedup(db, match_time=False)
+
+    os.mkdir('Trash')
     duplicate_finder.dedup(db, match_time=False)
 
     for item in dup['items'][1:]:
@@ -165,6 +172,8 @@ def test_dedup():
     # Move files back
     shutil.move('Trash/sideways.jpg', 'tests/images/deeply/nested/image')
     shutil.move('Trash/smaller.jpg', 'tests/images/deeply/nested/image')
+    os.rmdir('Trash')
+
 
 
 
